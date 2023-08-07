@@ -13,6 +13,6 @@
     - "/chat/{room_id}/join" require an invitation key if not privet
 - "/users/" get all users, **Note: this is an OnlyAdmin endpoint** :
     - "/users/{user_id}": get public data about a user 
-    - "/users/@me": get information about the current user after providing a acces_token
+    - "/users/@me": get information about the current user after providing an acces_token
     - "/users/@me/chatrooms"
     - "/users/@me/friends" 
