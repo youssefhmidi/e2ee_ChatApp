@@ -16,5 +16,3 @@
     - "/users/@me": get information about the current user after providing an acces_token
     - "/users/@me/chatrooms"
     - "/users/@me/friends" 
-
-from list
