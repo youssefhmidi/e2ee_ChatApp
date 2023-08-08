@@ -21,13 +21,15 @@ type SqliteDatabase interface {
 	GetModelById(ctx context.Context, Model interface{}, ID uint) (interface{}, error)
 	GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition string) (interface{}, error)
 	// Updates :
-	// AppendTo(ctx context.Context, Model interface{}, Assosiation string, in interface{}) error
-	// UpdateModel(ctx context.Context, Model interface{}, col string, value interface{}) error
+	AppendTo(ctx context.Context, Model interface{}, Assosiation string, in interface{}) error
+	UpdateModel(ctx context.Context, Model interface{}, col string, value interface{}) error
+	UpdateWhere(ctx context.Context, ModelType interface{}, condition_col string, condition_val interface{}, col string, value interface{}) error
 	// Delete :
-	// DeleteModel(ctx context.Context, Model interface{}) error
+	DeleteModel(ctx context.Context, Model interface{}) error
 }
 
 type Database struct {
+	// A database struct mainly for simplictiy
 	Database *gorm.DB
 }
 
@@ -62,6 +64,7 @@ func (db *Database) InitModels() {
 	==================
 */
 
+// make sure the in arg is a pointer
 func (db *Database) Insert(ctx context.Context, in interface{}) error {
 	return db.Database.WithContext(ctx).Create(in).Error
 }
@@ -94,4 +97,44 @@ func (db *Database) GetModelById(ctx context.Context, Model interface{}, ID uint
 func (db *Database) GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition string) (interface{}, error) {
 	res := db.Database.WithContext(ctx).First(Model, fmt.Sprintf("%v = ?", Col), Condition)
 	return Model, res.Error
+}
+
+/*
+	===================
+	== UPDATING DATA ==
+	===================
+*/
+
+// appending to an assosiation a field in the model struct type that refer to another struct,
+// E.g: the Messages field in User struct is an association
+//
+// ❗NOTE: Make sure the Model arg is a pointer❗ (I know goofy emoji)
+func (db *Database) AppendTo(ctx context.Context, Model interface{}, Assosiation string, in interface{}) error {
+	return db.Database.Model(Model).WithContext(ctx).Association(Assosiation).Append(in)
+}
+
+// Make sure the Model is not empty otherwise use UpdateWhere to Update a Model with a condition
+func (db *Database) UpdateModel(ctx context.Context, Model interface{}, col string, value interface{}) error {
+	return db.Database.Model(Model).WithContext(ctx).Update(col, value).Error
+}
+
+//	 // The ModelType argument take an empty struct of the type
+//		// E.g : if you want to update a user's name and you have only one Information about the user
+//		UpdateWhere(c, &User{}, "active", true, "name", "active user")
+//		// same as : UPDATE user SET name="active user" WHERE active=true
+//
+//		this a bad exmaple but I guess you get the point of this function now.
+func (db *Database) UpdateWhere(ctx context.Context, ModelType interface{}, condition_col string, condition_val interface{}, col string, value interface{}) error {
+	return db.Database.Model(ModelType).WithContext(ctx).Where(fmt.Sprintf("%v = ?", condition_col), condition_val).Update(col, value).Error
+}
+
+/*
+	===================
+	== DELETING DATA ==
+	===================
+*/
+
+// Make sure you're not passing an empty model To get a model use GetModelById() or GetModelWhere() methods
+func (db *Database) DeleteModel(ctx context.Context, Model interface{}) error {
+	return db.Database.Delete(Model).Error
 }
