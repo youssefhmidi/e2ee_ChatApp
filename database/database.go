@@ -12,19 +12,43 @@ import (
 
 // interface for simple interaction with the database
 type SqliteDatabase interface {
+	// init all models
 	InitModels()
 	// Creates :
+
+	// make sure the in arg is a pointer
 	Insert(ctx context.Context, In interface{}) error
 	// Gets :
+
+	// make sure the Model arg is a pointer so it can store the response value in it
 	GetAll(ctx context.Context, limit int, Model interface{}) (interface{}, error)
-	GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition string) (interface{}, error)
+	// make sure the Model arg is a pointer so it can store the response value in it
+	GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition interface{}) (interface{}, error)
+	// make sure the Model arg is a pointer so it can store the response value in it
 	GetModelById(ctx context.Context, Model interface{}, ID uint) (interface{}, error)
-	GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition string) (interface{}, error)
+	// make sure the Model arg is a pointer so it can store the response value in it
+	GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition interface{}) (interface{}, error)
+
 	// Updates :
+
+	// appending to an assosiation a field in the model struct type that refer to another struct,
+	// E.g: the Messages field in User struct is an association
+	//
+	// ❗NOTE: Make sure the Model arg is a pointer❗ (I know goofy emoji)
 	AppendTo(ctx context.Context, Model interface{}, Assosiation string, in interface{}) error
+	// Make sure the Model is not empty otherwise use UpdateWhere to Update a Model with a condition
 	UpdateModel(ctx context.Context, Model interface{}, col string, value interface{}) error
+	//	 // The ModelType argument take an empty struct of the type
+	//		// E.g : if you want to update a user's name and you have only one Information about the user
+	//		UpdateWhere(c, &User{}, "active", true, "name", "active user")
+	//		// same as : UPDATE user SET name="active user" WHERE active=true
+	//
+	//		this a bad exmaple but I guess you get the point of this function now.
 	UpdateWhere(ctx context.Context, ModelType interface{}, condition_col string, condition_val interface{}, col string, value interface{}) error
+
 	// Delete :
+
+	// Make sure you're not passing an empty model To get a model use GetModelById() or GetModelWhere() methods
 	DeleteModel(ctx context.Context, Model interface{}) error
 }
 
@@ -75,14 +99,14 @@ func (db *Database) Insert(ctx context.Context, in interface{}) error {
 	==================
 */
 
-// make sure the Model arg is a pointer so it can store the response value in it
+// make sure the Model arg is a pointer and a slice type so it can store the response value in it
 func (db *Database) GetAll(ctx context.Context, limit int, Model interface{}) (interface{}, error) {
 	res := db.Database.WithContext(ctx).Limit(limit).Find(Model)
 	return Model, res.Error
 }
 
 // make sure the Model arg is a pointer so it can store the response value in it
-func (db *Database) GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition string) (interface{}, error) {
+func (db *Database) GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition interface{}) (interface{}, error) {
 	res := db.Database.WithContext(ctx).Limit(limit).Find(Model, fmt.Sprintf("%v = ?", Col), Condition)
 	return Model, res.Error
 }
@@ -94,7 +118,7 @@ func (db *Database) GetModelById(ctx context.Context, Model interface{}, ID uint
 }
 
 // make sure the Model arg is a pointer so it can store the response value in it
-func (db *Database) GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition string) (interface{}, error) {
+func (db *Database) GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition interface{}) (interface{}, error) {
 	res := db.Database.WithContext(ctx).First(Model, fmt.Sprintf("%v = ?", Col), Condition)
 	return Model, res.Error
 }

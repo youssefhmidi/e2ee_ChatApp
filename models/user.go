@@ -38,5 +38,5 @@ type UserRepository interface {
 
 	// delete User
 
-	DeleteUser(ctx context.Context, user User)
+	DeleteUser(ctx context.Context, user User) error
 }
