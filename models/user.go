@@ -35,6 +35,10 @@ type UserRepository interface {
 	//	     // target : a table column like "email, password, ...etc", E.g:
 	//	  	UpdateUser(ctx, user, "name", "NewName")
 	UpdateUser(ctx context.Context, user User, target string, value interface{}) error
+	//   // AppendToUser is like the built in append but with an extra argument wich is the assosiation
+	//	 // the assosiation is a field Name in the struct type not in the sql table
+	//	 // make sure the in arg is a Slice
+	AppendToUser(ctx context.Context, user User, assosiation string, in interface{}) error
 
 	// delete User
 

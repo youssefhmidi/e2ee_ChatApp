@@ -15,7 +15,7 @@ type Message struct {
 
 type MessageRepository interface {
 	// Create a Message
-	CreateMessage(ctx context.Context, message Message, chatroom ChatRoom, user User) error
+	CreateMessage(ctx context.Context, message Message) error
 
 	// get a Message
 	GetMessageByID(ctx context.Context, ID uint) (Message, error)
@@ -25,7 +25,7 @@ type MessageRepository interface {
 	GetMsgsFromRoom(ctx context.Context, limit int, chatRoom ChatRoom) ([]Message, error)
 
 	// Update a Message
-	UpdateMessage(ctx context.Context, message Message) error
+	UpdateMessage(ctx context.Context, message Message, target string, value interface{}) error
 
 	// Delete a Message
 	DeleteMessage(ctx context.Context, message Message) error

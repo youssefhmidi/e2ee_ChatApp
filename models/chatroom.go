@@ -25,11 +25,12 @@ type ChatRoomRepository interface {
 	GetRoomByName(ctx context.Context, Name string) (ChatRoom, error)
 
 	// fetching multiple ChatRoom
-	GetRoomsFromUser(ctx context.Context, user User) ([]ChatRoom, error)
-	GetOwnedRooms(ctx context.Context, user User) ([]ChatRoom, error)
+	GetRoomsFromUser(ctx context.Context, limit int, user User) ([]ChatRoom, error)
+	GetOwnedRooms(ctx context.Context, limit int, user User) ([]ChatRoom, error)
 
 	// Updating a ChatRoom
-	UpdateRoom(ctx context.Context, room ChatRoom) error
+	UpdateRoom(ctx context.Context, room ChatRoom, target string, value interface{}) error
+	AppendToRoom(ctx context.Context, room ChatRoom, association string, in interface{}) error
 
 	// Delete a ChatRoom
 	DeleteRoom(ctx context.Context, room ChatRoom) error

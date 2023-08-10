@@ -24,9 +24,11 @@ type SqliteDatabase interface {
 	GetAll(ctx context.Context, limit int, Model interface{}) (interface{}, error)
 	// make sure the Model arg is a pointer so it can store the response value in it
 	GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition interface{}) (interface{}, error)
-	// make sure the Model arg is a pointer so it can store the response value in it
+	// return a list from an association where the the conditions are met
+	GetAllWithAssociation(ctx context.Context, limit int, ParentModel interface{}, Model interface{}, association string) (interface{}, error)
+	// make sure the Model arg is a pointer and a slice so it can store the response value in it
 	GetModelById(ctx context.Context, Model interface{}, ID uint) (interface{}, error)
-	// make sure the Model arg is a pointer so it can store the response value in it
+	// make sure the Model arg is a pointer and a slice so it can store the response value in it
 	GetModelWhere(ctx context.Context, Model interface{}, Col string, Condition interface{}) (interface{}, error)
 
 	// Updates :
@@ -105,10 +107,15 @@ func (db *Database) GetAll(ctx context.Context, limit int, Model interface{}) (i
 	return Model, res.Error
 }
 
-// make sure the Model arg is a pointer so it can store the response value in it
+// make sure the Model arg is a pointer  and a slice so it can store the response value in it
 func (db *Database) GetAllWhere(ctx context.Context, limit int, Model interface{}, Col string, Condition interface{}) (interface{}, error) {
 	res := db.Database.WithContext(ctx).Limit(limit).Find(Model, fmt.Sprintf("%v = ?", Col), Condition)
 	return Model, res.Error
+}
+
+func (db *Database) GetAllWithAssociation(ctx context.Context, limit int, ParentModel interface{}, Model interface{}, association string) (interface{}, error) {
+	res := db.Database.Model(ParentModel).WithContext(ctx).Limit(limit).Association(association).Find(Model)
+	return Model, res
 }
 
 // make sure the Model arg is a pointer so it can store the response value in it
