@@ -44,3 +44,10 @@ type UserRepository interface {
 
 	DeleteUser(ctx context.Context, user User) error
 }
+
+type UserService interface {
+}
+type LoginService interface {
+}
+type SignupService interface {
+}
