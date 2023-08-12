@@ -68,7 +68,7 @@ type UserService interface {
 	// Gets the user by the access token provided
 	GetUserByToken(ctx context.Context, token string) (User, error)
 	// Refresh the acces token and return new access token and another refresh token
-	RefreshToken(ctx context.Context, refreshToken string) AuthResponse
+	RefreshToken(ctx context.Context, refreshToken string) (AuthResponse, error)
 }
 
 type LoginService interface {
@@ -79,6 +79,7 @@ type LoginService interface {
 	// Create a respose with two tokens (access and refresh)
 	StartJwtSession(user User) AuthResponse
 }
+
 type SignupService interface {
 	// Checks if the email alreay exist
 	IsEmailExist(ctx context.Context, email string) bool
