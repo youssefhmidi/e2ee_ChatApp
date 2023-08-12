@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// main model
 type User struct {
 	gorm.Model
 	PublicKey      string `gorm:"unique"`
@@ -18,6 +19,24 @@ type User struct {
 	ChatRooms      []ChatRoom `gorm:"many2many:user_chatroom"`
 }
 
+// request and response models
+type AuthResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type SignupRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// interfacess
 type UserRepository interface {
 	//	Create a user
 	CreatUser(ctx context.Context, user User) error
@@ -46,8 +65,23 @@ type UserRepository interface {
 }
 
 type UserService interface {
+	// Gets the user by the access token provided
+	GetUserByToken(ctx context.Context, token string) (User, error)
+	// Refresh the acces token and return new access token and another refresh token
+	RefreshToken(ctx context.Context, refreshToken string) AuthResponse
 }
+
 type LoginService interface {
+	// checks if the email exist
+	ValidateEmail(ctx context.Context, email string) bool
+	// check if the password passed in are to the provided email
+	ValidateUser(ctx context.Context, request LoginRequest) bool
+	// Create a respose with two tokens (access and refresh)
+	StartJwtSession(user User) AuthResponse
 }
 type SignupService interface {
+	// Checks if the email alreay exist
+	IsEmailExist(ctx context.Context, email string) bool
+	// Register a User
+	RegisterUser(ctx context.Context, request SignupRequest) AuthResponse
 }
