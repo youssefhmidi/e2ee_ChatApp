@@ -21,7 +21,7 @@ func NewUserService(ur models.UserRepository, JwtS models.JwtService) models.Use
 }
 
 func (us *UserService) GetUserByToken(ctx context.Context, token string) (models.User, error) {
-	Id, err := auth.GetIdFromToken(token, us.JwtService.GetSecret("access"))
+	Id, err := auth.GetIdFromToken(token, us.JwtService.GetSecret(KeyForAccess))
 	if err != nil {
 		return models.User{}, err
 	}
@@ -31,7 +31,7 @@ func (us *UserService) GetUserByToken(ctx context.Context, token string) (models
 }
 func (us *UserService) RefreshToken(ctx context.Context, RefreshToken string) (models.AuthResponse, error) {
 	// Validate the token and return an empty struct object and an error if it catch some errors
-	IsValid, err := auth.ValidateToken(RefreshToken, us.JwtService.GetSecret("refresh"))
+	IsValid, err := auth.ValidateToken(RefreshToken, us.JwtService.GetSecret(KeyForRefresh))
 	if err != nil {
 		return models.AuthResponse{}, err
 	}
@@ -42,7 +42,7 @@ func (us *UserService) RefreshToken(ctx context.Context, RefreshToken string) (m
 	}
 
 	// gets the ID from the refreshToken argument otherwise returns an empty struct object and an error
-	ID, err := auth.GetIdFromToken(RefreshToken, us.JwtService.GetSecret("refresh"))
+	ID, err := auth.GetIdFromToken(RefreshToken, us.JwtService.GetSecret(KeyForRefresh))
 	if err != nil {
 		return models.AuthResponse{}, err
 	}
@@ -54,13 +54,13 @@ func (us *UserService) RefreshToken(ctx context.Context, RefreshToken string) (m
 	}
 
 	// Generating the access token otherwise returns an empty struct object and an error
-	accessToken, err := auth.CreateAccessToken(usr, us.JwtService.GetSecret("access"), us.JwtService.GetExpiryTime("access"))
+	accessToken, err := auth.CreateAccessToken(usr, us.JwtService.GetSecret(KeyForAccess), us.JwtService.GetExpiryTime(KeyForAccess))
 	if err != nil {
 		return models.AuthResponse{}, err
 	}
 
 	// Generating the Refresh token otherwise returns an empty struct object and an error
-	refreshToken, err := auth.CreateRefreshToken(usr, us.JwtService.GetSecret("refresh"), us.JwtService.GetExpiryTime("refresh"))
+	refreshToken, err := auth.CreateRefreshToken(usr, us.JwtService.GetSecret(KeyForRefresh), us.JwtService.GetExpiryTime(KeyForRefresh))
 	if err != nil {
 		return models.AuthResponse{}, err
 	}

@@ -8,7 +8,7 @@ type JwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-// interface to make the JWT date like the secret readonly
+// interface to make the JWT data readonly
 type JwtService interface {
 	//  //return the secret of the used JwtRequirement struct
 	//	 //e.g: Getting the acces token secret will look like this

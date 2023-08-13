@@ -7,6 +7,8 @@ require (
 	gorm.io/gorm v1.25.2
 )
 
+require golang.org/x/crypto v0.12.0
+
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/jinzhu/inflection v1.0.0 // indirect

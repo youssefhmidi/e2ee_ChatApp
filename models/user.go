@@ -10,7 +10,7 @@ import (
 type User struct {
 	gorm.Model
 	PublicKey      string `gorm:"unique"`
-	Name           string
+	Name           string `gorm:"index:idx_name"`
 	Email          string `gorm:"unique"`
 	Pasword        string
 	NickName       string
@@ -26,9 +26,10 @@ type AuthResponse struct {
 }
 
 type SignupRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	PublicKey string `json:"public_key"`
+	Password  string `json:"password"`
 }
 
 type LoginRequest struct {
@@ -84,5 +85,5 @@ type SignupService interface {
 	// Checks if the email alreay exist
 	IsEmailExist(ctx context.Context, email string) bool
 	// Register a User
-	RegisterUser(ctx context.Context, request SignupRequest) AuthResponse
+	RegisterUser(ctx context.Context, request SignupRequest) (AuthResponse, error)
 }

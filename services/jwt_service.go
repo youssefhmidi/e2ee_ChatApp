@@ -2,6 +2,13 @@ package services
 
 import "github.com/youssefhmidi/E2E_encryptedConnection/models"
 
+const (
+	// making the keys used in the GetSecret and GetExpiryTime a constant so if the futur me want to chanage somthing he can
+
+	KeyForAccess  = "access"
+	KeyForRefresh = "refresh"
+)
+
 type JwtRequirement struct {
 	Secret map[string]string
 	Expiry map[string]int

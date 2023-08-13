@@ -154,7 +154,9 @@ func (db *Database) UpdateModel(ctx context.Context, Model interface{}, col stri
 //		UpdateWhere(c, &User{}, "active", true, "name", "active user")
 //		// same as : UPDATE user SET name="active user" WHERE active=true
 //
-//		this a bad exmaple but I guess you get the point of this function now.
+//		// this a bad exmaple but I guess you get the point of this function now.
+//
+//		// ```WARNING : this method can be easily Sql Injected so (if anyone forked this code) make sure that only the server can use this method```
 func (db *Database) UpdateWhere(ctx context.Context, ModelType interface{}, condition_col string, condition_val interface{}, col string, value interface{}) error {
 	return db.Database.Model(ModelType).WithContext(ctx).Where(fmt.Sprintf("%v = ?", condition_col), condition_val).Update(col, value).Error
 }
