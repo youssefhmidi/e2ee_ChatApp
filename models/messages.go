@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Main struct
 type Message struct {
 	gorm.Model
 	UserID     uint
@@ -13,6 +14,13 @@ type Message struct {
 	Message    string
 }
 
+// Additionnal struct
+type MessageRequest struct {
+	Message string `json:"message"`
+	Reciver string `json:"reciver"`
+}
+
+// Intefaces
 type MessageRepository interface {
 	// Create a Message
 	CreateMessage(ctx context.Context, message Message) error
