@@ -8,6 +8,13 @@ type JwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+type JwtMessageClaim struct {
+	PublicKey     string `json:"public_key"`
+	SignedMessage string `json:"message"`
+	Id            int    `json:"id"`
+	jwt.RegisteredClaims
+}
+
 // interface to make the JWT data readonly
 type JwtService interface {
 	//  //return the secret of the used JwtRequirement struct

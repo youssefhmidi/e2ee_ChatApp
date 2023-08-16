@@ -4,7 +4,7 @@
 
 - "/login" & "/signup" endpoints for user logic
 - "/chat/" endpoint for the actual app :
-    - "/chat/rooms"
+    - "/chat/rooms" Shows all the public rooms
     - "/chat/@me/dms" 
     - "/chat/{room_id}"
     - "/chat/{room_id}/messages" if public

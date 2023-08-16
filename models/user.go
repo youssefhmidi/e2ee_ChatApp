@@ -70,6 +70,8 @@ type UserService interface {
 	GetUserByToken(ctx context.Context, token string) (User, error)
 	// Refresh the acces token and return new access token and another refresh token
 	RefreshToken(ctx context.Context, refreshToken string) (AuthResponse, error)
+
+	// TODO : Add a Logout function
 }
 
 type LoginService interface {

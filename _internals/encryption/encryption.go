@@ -69,7 +69,7 @@ func DecrypteMessage(gcm cipher.AEAD, cipherText string) string {
 
 // Verify function verifies who send the message and returns the raw text
 // and a boolean , if an error happen it will panic and stop the program
-func Verify(decryptedText string, publicKey *rsa.PublicKey) (string, bool) {
+func Verify(decryptedText string, publicKey *rsa.PublicKey) (jwt.MapClaims, bool) {
 	tok, err := jwt.Parse(decryptedText, func(tk *jwt.Token) (interface{}, error) {
 		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, errors.New("not a valid signing method")
@@ -77,9 +77,10 @@ func Verify(decryptedText string, publicKey *rsa.PublicKey) (string, bool) {
 		return publicKey, nil
 	})
 	if err != nil {
-		return "", false
+		return jwt.MapClaims{}, false
 	}
-	return tok.Claims.(jwt.MapClaims)["message"].(string), true
+
+	return tok.Claims.(jwt.MapClaims), true
 }
 
 // this parses the public keys which are stored in the database from []byte into *rsa.PublicKey
