@@ -86,7 +86,7 @@ func (rs *RoomService) GetRooms(ctx context.Context, user models.User, Type mode
 
 func (rs *RoomService) GetMembers(ctx context.Context, Room models.ChatRoom) ([]models.User, error) {
 	// easy I know because there's no way to do it efficiently tan this
-	rooms, err := rs.GetMembers(ctx, Room)
+	rooms, err := rs.RoomRepository.GetMembers(ctx, Room, 20)
 	return rooms, err
 }
 
