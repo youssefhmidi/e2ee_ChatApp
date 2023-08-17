@@ -38,3 +38,13 @@ type MessageRepository interface {
 	// Delete a Message
 	DeleteMessage(ctx context.Context, message Message) error
 }
+
+type ChatService interface {
+	// this method verify every message before encrypting and sending it
+	VerifyMessage(ctx context.Context, sender User, signedMessage string) error
+
+	// Create a message object in the databse with the provided room
+	// and sender arguments ,the actual message sending part is found in the
+	// internal package socket
+	SendMessage(ctx context.Context, message Message) error
+}
