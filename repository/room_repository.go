@@ -30,15 +30,24 @@ func (cr *ChatRoomRepository) GetRoomByName(ctx context.Context, Name string) (m
 	res, err := cr.Db.GetModelWhere(ctx, &models.ChatRoom{}, "name", Name)
 	return res.(models.ChatRoom), err
 }
+func (cr *ChatRoomRepository) GetRoomsByType(ctx context.Context, Type models.ChatType, limit int) ([]models.ChatRoom, error) {
+	res, err := cr.Db.GetAllWhere(ctx, limit, &[]models.ChatRoom{}, "type", Type)
+	return res.([]models.ChatRoom), err
+}
 
 func (cr *ChatRoomRepository) GetRoomsFromUser(ctx context.Context, limit int, user models.User) ([]models.ChatRoom, error) {
-	res, err := cr.Db.GetAllWithAssociation(ctx, limit, &user, &[]models.ChatRoom{}, "Members")
+	res, err := cr.Db.GetAllWithAssociation(ctx, limit, &user, &[]models.ChatRoom{}, "ChatRooms")
 	return res.([]models.ChatRoom), err
 }
 
 func (cr *ChatRoomRepository) GetOwnedRooms(ctx context.Context, limit int, user models.User) ([]models.ChatRoom, error) {
 	res, err := cr.Db.GetAllWhere(ctx, limit, &[]models.ChatRoom{}, "owner_id", user.ID)
 	return res.([]models.ChatRoom), err
+}
+
+func (cr *ChatRoomRepository) GetMembers(ctx context.Context, room models.ChatRoom, limit int) ([]models.User, error) {
+	res, err := cr.Db.GetAllWithAssociation(ctx, limit, &room, &[]models.User{}, "Members")
+	return res.([]models.User), err
 }
 
 func (cr *ChatRoomRepository) UpdateRoom(ctx context.Context, room models.ChatRoom, target string, value interface{}) error {
@@ -51,4 +60,8 @@ func (cr *ChatRoomRepository) AppendToRoom(ctx context.Context, room models.Chat
 
 func (cr *ChatRoomRepository) DeleteRoom(ctx context.Context, room models.ChatRoom) error {
 	return cr.Db.DeleteModel(ctx, &room)
+}
+
+func (cr *ChatRoomRepository) DeleteFromRoom(ctx context.Context, room models.ChatRoom, association string, in interface{}) error {
+	return cr.Db.DeleteAssociation(ctx, &room, association, &in)
 }

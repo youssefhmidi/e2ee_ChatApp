@@ -52,6 +52,8 @@ type SqliteDatabase interface {
 
 	// Make sure you're not passing an empty model To get a model use GetModelById() or GetModelWhere() methods
 	DeleteModel(ctx context.Context, Model interface{}) error
+	// Make sure you're not passing an empty model To get a model use GetModelById() or GetModelWhere() methods
+	DeleteAssociation(ctx context.Context, Model interface{}, Assosiation string, in interface{}) error
 }
 
 type Database struct {
@@ -62,7 +64,7 @@ type Database struct {
 // constructor
 func NewDB(location string) SqliteDatabase {
 	DB, err := gorm.Open(sqlite.Open(location), &gorm.Config{})
-	log.Println("Connecting to the database....")
+	log.Println("connecting to the database....")
 	if err != nil {
 		log.Fatal(err)
 		return &Database{}
@@ -170,4 +172,8 @@ func (db *Database) UpdateWhere(ctx context.Context, ModelType interface{}, cond
 // Make sure you're not passing an empty model To get a model use GetModelById() or GetModelWhere() methods
 func (db *Database) DeleteModel(ctx context.Context, Model interface{}) error {
 	return db.Database.Delete(Model).Error
+}
+
+func (db *Database) DeleteAssociation(ctx context.Context, Model interface{}, Association string, in interface{}) error {
+	return db.Database.Model(Model).Association(Association).Delete(in)
 }
