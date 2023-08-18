@@ -1,6 +1,8 @@
 ### Main features
 
-## Application Structure
+## Application cycle
+
+## Endpoints
 
 - "/login" & "/signup" endpoints for user logic
 - "/chat/" endpoint for the actual app :

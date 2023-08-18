@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +39,7 @@ type LoginRequest struct {
 }
 
 // interfacess
+
 type UserRepository interface {
 	//	Create a user
 	CreatUser(ctx context.Context, user User) error
@@ -88,4 +90,22 @@ type SignupService interface {
 	IsEmailExist(ctx context.Context, email string) bool
 	// Register a User
 	RegisterUser(ctx context.Context, request SignupRequest) (AuthResponse, error)
+}
+
+// User interaction route that the API will provide access to
+//
+// Endpoint : /users/@me
+type UserRoute interface {
+	// handle Users interaction and return some infotmation about a user
+	UserHandler(c *gin.Context)
+}
+
+type LoginRoute interface {
+	// handle incomming login requests and return a access&refresh token to the requestor
+	LoginHandler(c *gin.Context)
+}
+
+type SignupRoute interface {
+	// handle incomming signup requests and return a access&refresh token to the requestor
+	SignupHandler(c *gin.Context)
 }
