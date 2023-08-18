@@ -52,7 +52,7 @@ func (uc *UserController) RefreshTokenHandler(c *gin.Context) {
 	refresh := c.MustGet("refresh_token")
 
 	// refreshing the token
-	// if you're wondering where is the secret, the sicret is actually passed in when useing the NewUserService function
+	// if you're wondering where is the secret, it is actually passed in when useing the NewUserService function
 	ctx, cancel := context.WithTimeout(c, time.Duration(uc.Env.ContextTimeout)*time.Second)
 	defer cancel()
 	resp, err := uc.UserService.RefreshToken(ctx, refresh.(string))
