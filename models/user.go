@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -24,6 +25,15 @@ type User struct {
 type AuthResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type UserResponse struct {
+	ID        uint      `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	NickName  string    `json:"nick_name"`
+	PublicKey string    `json:"public_key"`
 }
 
 type SignupRequest struct {
@@ -98,6 +108,10 @@ type SignupService interface {
 type UserRoute interface {
 	// handle Users interaction and return some infotmation about a user
 	UserHandler(c *gin.Context)
+	// handle a refresh token request
+	//
+	// Note that this handler is mostly used by a front end dev or an api dev so the user wont be worried about their key getting expired
+	RefreshTokenHandler(c *gin.Context)
 }
 
 type LoginRoute interface {
