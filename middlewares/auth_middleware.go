@@ -29,5 +29,6 @@ func UseTokenVerification(secret string) gin.HandlerFunc {
 		if !IsValide {
 			c.JSON(http.StatusBadRequest, models.ErrorMessage{ResponseMessage: "unAuthorized jwt Token"})
 		}
+		c.Set("access_token", accessToken)
 	}
 }
