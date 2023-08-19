@@ -82,7 +82,6 @@ type UserService interface {
 	GetUserByToken(ctx context.Context, token string) (User, error)
 	// Refresh the acces token and return new access token and another refresh token
 	RefreshToken(ctx context.Context, refreshToken string) (AuthResponse, error)
-
 	// TODO : Add a Logout function
 }
 
@@ -93,6 +92,8 @@ type LoginService interface {
 	ValidateUser(ctx context.Context, request LoginRequest) bool
 	// Create a respose with two tokens (access and refresh)
 	StartJwtSession(user User) AuthResponse
+	// Getting a user by its
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
 
 type SignupService interface {

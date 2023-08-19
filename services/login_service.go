@@ -39,6 +39,9 @@ func (ls *LoginService) ValidateUser(ctx context.Context, request models.LoginRe
 	}
 	return true
 }
+func (ls *LoginService) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	return ls.UserRepository.GetUserByEmail(ctx, email)
+}
 
 func (ls *LoginService) StartJwtSession(user models.User) models.AuthResponse {
 	Accesstoken, err := auth.CreateAccessToken(user, ls.JwtService.GetSecret(KeyForAccess), ls.JwtService.GetExpiryTime(KeyForAccess))
