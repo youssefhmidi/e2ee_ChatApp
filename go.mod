@@ -9,6 +9,8 @@ require (
 
 require golang.org/x/crypto v0.12.0
 
+require github.com/gorilla/websocket v1.5.0
+
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
