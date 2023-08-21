@@ -22,6 +22,16 @@ type Room struct {
 	Leave chan *Client
 }
 
+func NewRoom(r models.ChatRoom) *Room {
+	return &Room{
+		Room:     r,
+		Clients:  make(map[*Client]*websocket.Conn),
+		Brodcast: make(chan []byte),
+		Join:     make(chan *Client),
+		Leave:    make(chan *Client),
+	}
+}
+
 func (r *Room) Run() {
 
 }

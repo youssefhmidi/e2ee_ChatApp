@@ -45,6 +45,6 @@ type ChatService interface {
 
 	// Create a message object in the databse with the provided room
 	// and sender arguments ,the actual message sending part is found in the
-	// internal package socket
+	// internal package websocket
 	SendMessage(ctx context.Context, message Message) error
 }
