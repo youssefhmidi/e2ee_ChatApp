@@ -1,6 +1,8 @@
 package websocket
 
 import (
+	"log"
+
 	"github.com/gorilla/websocket"
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
@@ -31,7 +33,49 @@ func NewClient(user *models.User, conn *websocket.Conn, room *Room) *Client {
 }
 
 // ReadIn will read every input that the user will provide and brodcast it to the whole room
-func (c *Client) ReadIn() {}
+func (c *Client) ReadIn() {
+	// closing the connection as soon as the loop breaks
+	defer func() {
+		c.Conn.Close()
+		c.Room.Leave <- c
+	}()
+
+	// loop for brodcasting every message to the room
+	for {
+		_, msg, err := c.Conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Println("error :", err)
+			}
+			break
+		}
+		Message := []byte(c.User.Name + " : " + string(msg) + "\n")
+		c.Room.Brodcast <- Message
+	}
+}
 
 // WriteOut will send to the client every message that has been brodcasted to the Room the Client is curently in
-func (c *Client) WriteOut() {}
+func (c *Client) WriteOut() {
+
+	defer func() {
+		c.Conn.Close()
+	}()
+
+	for {
+		select {
+		case message, ok := <-c.Send:
+
+			// if somthing happened break the loop
+			if !ok {
+				break
+			}
+
+			// write to the websocket connection the message
+			if err := c.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
+				log.Println("error :", err)
+			}
+		default:
+			continue
+		}
+	}
+}

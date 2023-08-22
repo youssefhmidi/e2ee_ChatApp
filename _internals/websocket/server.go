@@ -32,6 +32,16 @@ func (ss *SocketServer) GetRoom(ChatRoom models.ChatRoom) (Room, error) {
 	return Room{}, ErrRoomNotFound
 }
 
+// initilize a SocketServer and populates it with Rooms
+func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
+	// Add registered Rooms to the SocketServer
+	for _, r := range DBChatRooms {
+		ss.Rooms = append(ss.Rooms, *NewRoom(r))
+	}
+	// run the main loop for the rooms
+	startServer(ss.Rooms)
+}
+
 // a Service that the room controller will use to make rooms and to open
 // websocket connection and start a rooms
 type WebSocketService interface {
@@ -40,12 +50,12 @@ type WebSocketService interface {
 	VerifyAccess(usr models.User, room models.ChatRoom) bool
 
 	// add user to the room and start a Client
-	JoinRoom(usr models.User, room Room) error
+	JoinRoom(ws *websocket.Conn, usr models.User, room Room) error
 }
 
-func StartRooms(ChatRooms []models.ChatRoom) {
+// start the server and hosts all the rooms
+func startServer(ChatRooms []Room) {
 	for _, r := range ChatRooms {
-		room := NewRoom(r)
-		go room.Run()
+		go r.Run()
 	}
 }

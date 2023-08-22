@@ -5,6 +5,12 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
 
+// a Type Alias for Brdcasted messaged
+type MessagesCh chan []byte
+
+// Add the current brodcasted message to the DB
+func (mc MessagesCh) StoreTo() {}
+
 type Room struct {
 	// Room field is for verifying users and for extra functionalities
 	Room models.ChatRoom
@@ -32,6 +38,24 @@ func NewRoom(r models.ChatRoom) *Room {
 	}
 }
 
+// TODOS : Need a re-write so it will be posible to store messages
 func (r *Room) Run() {
-
+	for {
+		select {
+		case client := <-r.Join:
+			r.Clients[client] = client.Conn
+		case client := <-r.Leave:
+			close(client.Send)
+			delete(r.Clients, client)
+		case message := <-r.Brodcast:
+			for client := range r.Clients {
+				select {
+				case client.Send <- message:
+				default:
+					close(client.Send)
+					delete(r.Clients, client)
+				}
+			}
+		}
+	}
 }
