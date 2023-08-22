@@ -6,3 +6,5 @@ type WebsockeService struct {
 	ChatService models.ChatService
 	RoomService models.ChatRoomService
 }
+
+// todo implemebnt the interface

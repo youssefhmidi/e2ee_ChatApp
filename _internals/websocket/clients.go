@@ -16,7 +16,7 @@ type Client struct {
 	User *models.User
 
 	// chanel for sending strings
-	Send chan []byte
+	Send ClientMessageCh
 
 	// the room that the client is currently connecting
 	Room *Room
@@ -27,7 +27,7 @@ func NewClient(user *models.User, conn *websocket.Conn, room *Room) *Client {
 	return &Client{
 		User: user,
 		Conn: conn,
-		Send: make(chan []byte),
+		Send: make(ClientMessageCh),
 		Room: room,
 	}
 }
@@ -49,7 +49,11 @@ func (c *Client) ReadIn() {
 			}
 			break
 		}
-		Message := []byte(c.User.Name + " : " + string(msg) + "\n")
+		Message := ClientMessage{
+			EncryptedMessage: string(msg),
+			SenderID:         c.User.ID,
+			ChatRoomID:       c.Room.ChatRoom.ID,
+		}
 		c.Room.Brodcast <- Message
 	}
 }
@@ -71,7 +75,7 @@ func (c *Client) WriteOut() {
 			}
 
 			// write to the websocket connection the message
-			if err := c.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
+			if err := c.Conn.WriteJSON(message); err != nil {
 				log.Println("error :", err)
 			}
 		default:

@@ -5,21 +5,15 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
 
-// a Type Alias for Brdcasted messaged
-type MessagesCh chan []byte
-
-// Add the current brodcasted message to the DB
-func (mc MessagesCh) StoreTo() {}
-
 type Room struct {
 	// Room field is for verifying users and for extra functionalities
-	Room models.ChatRoom
+	ChatRoom models.ChatRoom
 
 	// clients who are currently connected to the room
 	Clients map[*Client]*websocket.Conn
 
 	// Brodcast is a channel that is used to brodcst any message to every other connection in the room
-	Brodcast chan []byte
+	Brodcast ClientMessageCh
 
 	// channel for joining a room
 	Join chan *Client
@@ -30,16 +24,17 @@ type Room struct {
 
 func NewRoom(r models.ChatRoom) *Room {
 	return &Room{
-		Room:     r,
+		ChatRoom: r,
 		Clients:  make(map[*Client]*websocket.Conn),
-		Brodcast: make(chan []byte),
+		Brodcast: make(ClientMessageCh),
 		Join:     make(chan *Client),
 		Leave:    make(chan *Client),
 	}
 }
 
 // TODOS : Need a re-write so it will be posible to store messages
-func (r *Room) Run() {
+func (r *Room) Run(store Store) {
+	ClientMsgch := store[r]
 	for {
 		select {
 		case client := <-r.Join:
@@ -48,6 +43,8 @@ func (r *Room) Run() {
 			close(client.Send)
 			delete(r.Clients, client)
 		case message := <-r.Brodcast:
+			ClientMsgch <- message
+
 			for client := range r.Clients {
 				select {
 				case client.Send <- message:

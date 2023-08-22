@@ -1,6 +1,6 @@
 module github.com/youssefhmidi/E2E_encryptedConnection
 
-go 1.19
+go 1.21
 
 require (
 	gorm.io/driver/sqlite v1.5.2

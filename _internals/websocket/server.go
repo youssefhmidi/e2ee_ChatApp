@@ -2,30 +2,71 @@ package websocket
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gorilla/websocket"
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
 
+// types that this package and main packages will use
+type (
+	ClientMessage struct {
+		// encrypted message is the input that the client send to the server
+		EncryptedMessage string `json:"encrypted_message"`
+		// the sender ID this will be used to create a message object in the db
+		SenderID uint `json:"sender"`
+		// this field also going to be used to store the message in the db
+		ChatRoomID uint `json:"room_id"`
+	}
+	// an alias so It will be esy to document the type
+	ClientMessageCh chan ClientMessage
+
+	// a Store is a list of channels so the server will be able to seperatlly add messages to the server
+	Store map[*Room]ClientMessageCh
+
+	// StorageFunc is a function that take care of storing the Recived data from the messages channel that is maped by its Room
+	// it returns an error if it can't store
+	StorageFunc func(ClientMessageCh) error
+)
+
+// methods for the Store type alias
+func (s Store) Store(room *Room, storageFunc StorageFunc) {
+	for {
+		if err := storageFunc(s[room]); err != nil {
+			log.Fatal(err)
+			break
+		}
+	}
+}
+
 var (
+	// a already pre made Ugrader that has a
+	// WriteBufferSize and ReadBufferSize of 1024
 	DefaultUpgrader = websocket.Upgrader{
 		WriteBufferSize: 1024,
 		ReadBufferSize:  1024,
 	}
 	ErrRoomNotFound = errors.New("couldn't find the room in socket server Rooms, consider talking to")
+	ErrStoringFaild = errors.New("can't store the message to the database")
 )
 
 // the SocketServer will manage every room in the server and will loop over every one and start one by one
 type SocketServer struct {
 	// Rooms are list of rooms that will be started seperatlly in a goroutine
 	Rooms []Room
+
+	// a Store that will storing messages to the db
+	LocalStore Store
+
+	// Storing function that will be executed by the store
+	StorageFunc
 }
 
 // Getting the Room by its Room field,
 // which is just the 'models.ChatRoom' field
 func (ss *SocketServer) GetRoom(ChatRoom models.ChatRoom) (Room, error) {
 	for _, room := range ss.Rooms {
-		if room.Room.ID == ChatRoom.ID {
+		if room.ChatRoom.ID == ChatRoom.ID {
 			return room, nil
 		}
 	}
@@ -39,7 +80,19 @@ func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
 		ss.Rooms = append(ss.Rooms, *NewRoom(r))
 	}
 	// run the main loop for the rooms
-	startServer(ss.Rooms)
+	startServer(ss.Rooms, *ss)
+}
+
+// start the server and hosts all the rooms
+func startServer(ChatRooms []Room, s SocketServer) {
+	store := make(Store)
+	s.LocalStore = store
+	for _, r := range ChatRooms {
+		store[&r] = make(ClientMessageCh, 30)
+
+		go r.Run(store)
+		go store.Store(&r, s.StorageFunc)
+	}
 }
 
 // a Service that the room controller will use to make rooms and to open
@@ -51,11 +104,7 @@ type WebSocketService interface {
 
 	// add user to the room and start a Client
 	JoinRoom(ws *websocket.Conn, usr models.User, room Room) error
-}
 
-// start the server and hosts all the rooms
-func startServer(ChatRooms []Room) {
-	for _, r := range ChatRooms {
-		go r.Run()
-	}
+	// return a storagefunc that will store all the messages
+	StoreMsgsToDatabase() StorageFunc
 }
