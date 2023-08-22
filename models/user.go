@@ -109,6 +109,7 @@ type SignupService interface {
 type UserRoute interface {
 	// handle Users interaction and return some infotmation about a user
 	UserHandler(c *gin.Context)
+
 	// handle a refresh token request
 	//
 	// Note that this handler is mostly used by a front end dev or an api dev so the user wont be worried about their key getting expired

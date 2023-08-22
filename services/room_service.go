@@ -8,6 +8,11 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
 
+// errors
+var (
+	ErrAlreadyInRoom = errors.New("user already a member in the provided room")
+)
+
 // the service folder is not documented that well, If you want to know the functionnalities of a function you could see the domain folder
 // in this case go to chatroom.go check the ChatRoomService interface to see more
 
@@ -64,6 +69,17 @@ func (rs *RoomService) CreateDM(ctx context.Context, user1 models.User, user2 mo
 }
 
 func (rs *RoomService) AddMember(ctx context.Context, Room models.ChatRoom, user models.User) error {
+	// check if the user is already a member
+	members, err := rs.GetMembers(ctx, Room)
+	if err != nil {
+		return err
+	}
+	for _, member := range members {
+		if member.ID == user.ID {
+			return ErrAlreadyInRoom
+		}
+	}
+
 	// the AppendToRoom method takes the ctx (i.e the context of the request), Room (i.e the room which we want to add a user to)
 	// and user (i.e the user we want to add) as arguments and returns an err if something faild
 	return rs.RoomRepository.AppendToRoom(ctx, Room, "Members", user)

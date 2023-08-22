@@ -1,6 +1,7 @@
-package websocket
+package socket
 
 import (
+	"context"
 	"errors"
 	"log"
 
@@ -100,11 +101,11 @@ func startServer(ChatRooms []Room, s SocketServer) {
 type WebSocketService interface {
 	// checks the user's rooms and returns true if the access is accepted or false
 	// if the user is not a part of that room
-	VerifyAccess(usr models.User, room models.ChatRoom) bool
+	VerifyAccess(ctx context.Context, usr models.User, room models.ChatRoom) bool
 
-	// add user to the room and start a Client
-	JoinRoom(ws *websocket.Conn, usr models.User, room Room) error
+	// Creat a client with the ptovided websocket connection ,user and room
+	CreateClient(ctx context.Context, ws *websocket.Conn, usr models.User, room Room) (*Client, error)
 
 	// return a storagefunc that will store all the messages
-	StoreMsgsToDatabase() StorageFunc
+	StoreMsgsToDatabase(ctx context.Context) StorageFunc
 }

@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -76,4 +77,34 @@ type ChatRoomService interface {
 
 	// Delets the proviede room
 	RemoveRoom(ctx context.Context, Room ChatRoom) error
+}
+
+// Router interface for Handlers
+//
+// the Endpoint will be in a group '/chat/'
+type RoomRouter interface {
+	// this handler must be used by the relative path '/chat/:room_id/join'
+	// and a invite key may be nessecairy if the room is not public
+	JoinHandler(c *gin.Context)
+
+	// this handler must be used by the reletive path '/chat/new'
+	// this will create a room and the user should only care about the name and if its public or not
+	CreateRoomHandler(c *gin.Context)
+
+	// Creates a invitation key (jwt) so the user will be able to access
+	// relative path : '/chat/:room_id/member' with POST method
+	//
+	// ```NOTE : If the room is public you can't use this ```
+	AddMemberHandler(c *gin.Context)
+
+	// Remove a member from the member list
+	// relative path : /chat/:room_id/member with DELETE method
+	//
+	// TODO : make a ban list
+	RemoveMemberHandler(c *gin.Context)
+
+	// get a specific data about a room
+	// the 'requested' param is what the database will send to the user
+	// reletive path : '/chat/:room_id'
+	GetHandler(c *gin.Context)
 }

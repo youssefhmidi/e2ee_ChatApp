@@ -1,10 +1,14 @@
 package controllers
 
 import (
-	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/websocket"
+	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/socket"
+	"github.com/youssefhmidi/E2E_encryptedConnection/models"
+	"github.com/youssefhmidi/E2E_encryptedConnection/services"
 )
 
 type RoomController struct {
-	SocketServer     websocket.SocketServer
-	WebsocketService websocket.WebSocketService
+	SocketServer     socket.SocketServer
+	WebsocketService socket.WebSocketService
+	ChatRoomService  models.ChatRoomService
+	GroupChatService services.GroupChatEncryption
 }

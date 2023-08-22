@@ -7,11 +7,9 @@
 - "/login" & "/signup"  & "/refresh/" endpoints for user logic
 - "/chat/" endpoint for the actual app :
     - "/chat/rooms" Shows all the public rooms
+    - "/chat/new" create a new dms or a group chat
     - "/chat/@me/dms" 
-    - "/chat/{room_id}"
-    - "/chat/{room_id}/messages" if public
-    - "/chat/{room_id}/members" if public
-    - "/chat/{room_id}/owner" if public
+    - "/chat/{room_id}" get the specified data in the request 
     - "/chat/{room_id}/join" require an invitation key if not public
 - "/users/" get all users, **Note: this is an OnlyAdmin endpoint** :
     - "/users/{user_id}": get public data about a user 
