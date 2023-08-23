@@ -10,7 +10,8 @@ import (
 
 // errors
 var (
-	ErrAlreadyInRoom = errors.New("user already a member in the provided room")
+	ErrAlreadyInRoom        = errors.New("user already a member in the provided room")
+	ErrInvildeParameterType = errors.New("invalid type pls check the function documentation and see the right types that the parameter should be")
 )
 
 // the service folder is not documented that well, If you want to know the functionnalities of a function you could see the domain folder
@@ -98,6 +99,20 @@ func (rs *RoomService) GetRooms(ctx context.Context, user models.User, Type mode
 
 	rooms, err := rs.RoomRepository.GetRoomsByType(ctx, Type, 20)
 	return rooms, err
+}
+
+func (rs *RoomService) GetRoomBy(ctx context.Context, val any) (models.ChatRoom, error) {
+	// Checks if the val paramter is type uint and return the result, error
+	if ID, ok := val.(uint); ok {
+		return rs.RoomRepository.GetRoomByID(ctx, ID)
+	}
+
+	if Name, ok := val.(string); ok {
+		return rs.RoomRepository.GetRoomByName(ctx, Name)
+	}
+
+	// returns an empty ChatRoom object and a Error
+	return models.ChatRoom{}, ErrInvildeParameterType
 }
 
 func (rs *RoomService) GetMembers(ctx context.Context, Room models.ChatRoom) ([]models.User, error) {

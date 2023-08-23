@@ -75,8 +75,13 @@ type ChatRoomService interface {
 	// Get all the Room that the User is joining
 	GetRoomsFromUser(ctx context.Context, user User) ([]ChatRoom, error)
 
-	// Delets the proviede room
+	// Delete the proviede room
 	RemoveRoom(ctx context.Context, Room ChatRoom) error
+
+	// Return a chatroom by its passed 'val' parameter
+	//
+	// val can be a string or a uint, if another type is passed it will return a ErrInvildeParameterType error and an empty chat room
+	GetRoomBy(ctx context.Context, val any) (ChatRoom, error)
 }
 
 // Router interface for Handlers
