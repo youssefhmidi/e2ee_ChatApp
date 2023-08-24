@@ -46,12 +46,7 @@ func (r *Room) Run(store Store) {
 			ClientMsgch <- message
 
 			for client := range r.Clients {
-				select {
-				case client.Send <- message:
-				default:
-					close(client.Send)
-					delete(r.Clients, client)
-				}
+				client.Send <- message
 			}
 		}
 	}

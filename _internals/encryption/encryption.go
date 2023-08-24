@@ -57,7 +57,7 @@ func EncrypteSignedMessage(gcm cipher.AEAD, signedMessage string) string {
 // gets the signed string from the encrypted signed string and returns it
 func DecrypteMessage(gcm cipher.AEAD, cipherText string) string {
 	nonce := gcm.NonceSize()
-	// ceperating the nounce from the cipher text
+	// seperating the nounce from the cipher text
 	Encryptednonce, EncryptedText := cipherText[:nonce], cipherText[nonce:]
 	decryptedText, err := gcm.Open(nil, []byte(Encryptednonce), []byte(EncryptedText), nil)
 

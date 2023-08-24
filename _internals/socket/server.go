@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 
 	"github.com/gorilla/websocket"
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
@@ -34,7 +35,7 @@ type (
 func (s Store) Store(room *Room, storageFunc StorageFunc) {
 	for {
 		if err := storageFunc(s[room]); err != nil {
-			log.Fatal(err)
+			log.Fatal(err, "IT WAS HERE FROM THE BEGENING")
 			break
 		}
 	}
@@ -46,6 +47,9 @@ var (
 	DefaultUpgrader = websocket.Upgrader{
 		WriteBufferSize: 1024,
 		ReadBufferSize:  1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}
 	ErrRoomNotFound = errors.New("couldn't find the room in socket server Rooms, consider talking to")
 	ErrStoringFaild = errors.New("can't store the message to the database")
@@ -54,7 +58,7 @@ var (
 // the SocketServer will manage every room in the server and will loop over every one and start one by one
 type SocketServer struct {
 	// Rooms are list of rooms that will be started seperatlly in a goroutine
-	Rooms []Room
+	Rooms []*Room
 
 	// a Store that will storing messages to the db
 	LocalStore Store
@@ -65,34 +69,33 @@ type SocketServer struct {
 
 // Getting the Room by its Room field,
 // which is just the 'models.ChatRoom' field
-func (ss *SocketServer) GetRoom(ChatRoom models.ChatRoom) (Room, error) {
+func (ss *SocketServer) GetRoom(ChatRoom models.ChatRoom) (*Room, error) {
 	for _, room := range ss.Rooms {
 		if room.ChatRoom.ID == ChatRoom.ID {
 			return room, nil
 		}
 	}
-	return Room{}, ErrRoomNotFound
+	return &Room{}, ErrRoomNotFound
 }
 
 // initilize a SocketServer and populates it with Rooms
 func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
 	// Add registered Rooms to the SocketServer
 	for _, r := range DBChatRooms {
-		ss.Rooms = append(ss.Rooms, *NewRoom(r))
+		ss.Rooms = append(ss.Rooms, NewRoom(r))
 	}
 	// run the main loop for the rooms
-	startServer(ss.Rooms, *ss)
+	startServer(ss.Rooms, ss)
 }
 
 // start the server and hosts all the rooms
-func startServer(ChatRooms []Room, s SocketServer) {
-	store := make(Store)
-	s.LocalStore = store
+func startServer(ChatRooms []*Room, s *SocketServer) {
+	s.LocalStore = make(Store)
 	for _, r := range ChatRooms {
-		store[&r] = make(ClientMessageCh, 30)
+		s.LocalStore[r] = make(ClientMessageCh, 30)
 
-		go r.Run(store)
-		go store.Store(&r, s.StorageFunc)
+		go r.Run(s.LocalStore)
+		go s.LocalStore.Store(r, s.StorageFunc)
 	}
 }
 
