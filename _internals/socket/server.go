@@ -35,7 +35,7 @@ type (
 func (s Store) Store(room *Room, storageFunc StorageFunc) {
 	for {
 		if err := storageFunc(s[room]); err != nil {
-			log.Fatal(err, "IT WAS HERE FROM THE BEGENING")
+			log.Fatal(err)
 			break
 		}
 	}
@@ -65,6 +65,28 @@ type SocketServer struct {
 
 	// Storing function that will be executed by the store
 	StorageFunc
+}
+
+// initilize a server with the sore function provided
+func NewServer(Function StorageFunc) *SocketServer {
+	return &SocketServer{
+		StorageFunc: Function,
+	}
+}
+
+func (ss *SocketServer) RunAndRegisterRoom(Room models.ChatRoom) {
+	// adding the room to the SocketServer
+	ss.Rooms = append(ss.Rooms, NewRoom(Room))
+
+	// Getting the room back after registering it
+	r, err := ss.GetRoom(Room)
+	if err != nil {
+		log.Fatal("error while trying to registrea new room :", err)
+	}
+
+	// these go routines will not finish untill the program is stop
+	go r.Run(ss.LocalStore)
+	go ss.LocalStore.Store(r, ss.StorageFunc)
 }
 
 // Getting the Room by its Room field,

@@ -32,7 +32,6 @@ func NewRoom(r models.ChatRoom) *Room {
 	}
 }
 
-// TODOS : Need a re-write so it will be posible to store messages
 func (r *Room) Run(store Store) {
 	ClientMsgch := store[r]
 	for {

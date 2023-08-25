@@ -5,6 +5,7 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/encryption"
 )
 
+// this service should be used if in the future I want to add  bots
 type GroupChatEncryption struct {
 	GroupPublicKey []byte
 }

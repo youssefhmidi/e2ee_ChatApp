@@ -92,11 +92,12 @@ func (rs *RoomService) RemoveMember(ctx context.Context, Room models.ChatRoom, u
 	return rs.RoomRepository.DeleteFromRoom(ctx, Room, "Members", user)
 }
 
-func (rs *RoomService) GetRooms(ctx context.Context, user models.User, Type models.ChatType) ([]models.ChatRoom, error) {
+func (rs *RoomService) GetRooms(ctx context.Context, Type models.ChatType) ([]models.ChatRoom, error) {
 	if Type != "dm" && Type != "group" {
 		return []models.ChatRoom{}, errors.New("the Type of the room can be only 'dm' or 'group'")
 	}
 
+	// returns all the rooms with this type
 	rooms, err := rs.RoomRepository.GetRoomsByType(ctx, Type, 20)
 	return rooms, err
 }

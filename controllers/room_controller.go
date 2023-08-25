@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/socket"
 	"github.com/youssefhmidi/E2E_encryptedConnection/bootstraps"
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
-	"github.com/youssefhmidi/E2E_encryptedConnection/services"
 )
 
 type RoomController struct {
@@ -18,35 +18,146 @@ type RoomController struct {
 	SocketServer     *socket.SocketServer
 	WebsocketService socket.WebSocketService
 	ChatRoomService  models.ChatRoomService
-	GroupChatService services.GroupChatEncryption
+	UserService      models.UserService
 }
 
 // todo : finish code here
 
-func NewRoomController(ss *socket.SocketServer, wss socket.WebSocketService, crs models.ChatRoomService, gcs services.GroupChatEncryption, env *bootstraps.Env) models.RoomRouter {
+func NewRoomController(ss *socket.SocketServer, wss socket.WebSocketService, crs models.ChatRoomService, us models.UserService, env *bootstraps.Env) models.RoomRouter {
 	return &RoomController{
 		SocketServer:     ss,
 		WebsocketService: wss,
+		UserService:      us,
 		ChatRoomService:  crs,
-		GroupChatService: gcs,
 		Env:              env,
 	}
 }
 
 func (rc *RoomController) JoinHandler(c *gin.Context) {
+	// getting the user access token
+	accessToken := c.MustGet("access_token")
 
+	// getting the athor of the request
+	ctx, cancel := context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	user, err := rc.UserService.GetUserByToken(ctx, accessToken.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+
+	// getting the specified room from the request
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	RoomID, err := toUint(c.Param("room_id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+	room, err := rc.ChatRoomService.GetRoomBy(ctx, RoomID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorMessage{
+			ResponseMessage: `Can not find the room with the provided id, make sure that th id is correct, 
+			no typos and if the err seems to occur again contact an admin, Error :` + err.Error(),
+		})
+		return
+	}
+
+	// Checking if the user have access to the room and verifing the user invite key
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	if !rc.WebsocketService.VerifyAccess(ctx, user, room) {
+		// TODO : add a invite key logic
+		c.JSON(http.StatusBadRequest, "man! I don't know either wtf to do a this point")
+	}
+
+	// Upgrade turn the request into a websocket connection. and registrating the room
+	ws, err := socket.DefaultUpgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+	room_Conn, err := rc.SocketServer.GetRoom(room)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+
+	// Starting a client and adding the user to the room
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	client, err := rc.WebsocketService.CreateClient(ctx, ws, user, *room_Conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+	room_Conn.Join <- client
+
+	go client.ReadIn()
+	go client.WriteOut()
 }
 
 func (rc *RoomController) CreateRoomHandler(c *gin.Context) {
+	// binding the request to the req variable
+	var req models.CreateRoomRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
 
-}
+	// getting the user access token
+	accessToken := c.MustGet("access_token")
 
-func (rc *RoomController) AddMemberHandler(c *gin.Context) {
+	// getting the athor of the request
+	ctx, cancel := context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	user, err := rc.UserService.GetUserByToken(ctx, accessToken.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
 
-}
+	// getting the users by their id
+	members := []models.User{}
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	for _, IDs := range req.MembersID {
+		usr, err := rc.UserService.GetUserById(ctx, IDs)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+			return
+		}
+		members = append(members, usr)
+	}
 
-func (rc *RoomController) RemoveMemberHandler(c *gin.Context) {
+	// creating the room
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
 
+	if req.Type == "group" {
+		key, err := rc.ChatRoomService.CreateGroup(ctx, req.Name, user, members, req.IsPublic)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+			return
+		}
+		c.JSON(http.StatusAccepted, models.SuccesMessage{ResponseMessage: "Chat Group created ,EncryptionKey :" + key})
+		return
+	}
+
+	if err := rc.ChatRoomService.CreateDM(ctx, user, members[0]); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: " cant create room" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, models.SuccesMessage{ResponseMessage: "DM created"})
+
+	// adding the room to the SocketServer and runing them seperatly
+	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	room, err := rc.ChatRoomService.GetRoomBy(ctx, req.Name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rc.SocketServer.RunAndRegisterRoom(room)
 }
 
 func (rc *RoomController) GetHandler(c *gin.Context) {
@@ -58,12 +169,11 @@ func (rc *RoomController) GetHandler(c *gin.Context) {
 
 	// converting the param from string to int to uint
 	RoomIdStr := c.Param("room_id")
-	ID, err := strconv.ParseUint(RoomIdStr, 10, 64)
+	RoomID, err := toUint(RoomIdStr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
 		return
 	}
-	RoomID := uint(ID)
 
 	// Getting the room by its id
 	ctx, cancel := context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
@@ -96,7 +206,14 @@ func (rc *RoomController) GetHandler(c *gin.Context) {
 	}
 	if ShouldReturn {
 		c.JSON(http.StatusOK, Output)
+		return
 	}
 
 	c.JSON(http.StatusOK, room)
+}
+
+func toUint(paramReq string) (uint, error) {
+	ID, err := strconv.ParseUint(paramReq, 10, 64)
+	RoomID := uint(ID)
+	return RoomID, err
 }

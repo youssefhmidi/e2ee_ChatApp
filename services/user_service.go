@@ -29,6 +29,10 @@ func (us *UserService) GetUserByToken(ctx context.Context, token string) (models
 	user, err := us.UserRepository.GetUserById(ctx, Id)
 	return user, err
 }
+
+func (us *UserService) GetUserById(ctx context.Context, ID uint) (models.User, error) {
+	return us.UserRepository.GetUserById(ctx, ID)
+}
 func (us *UserService) RefreshToken(ctx context.Context, RefreshToken string) (models.AuthResponse, error) {
 	// Validate the token and return an empty struct object and an error if it catch some errors
 	IsValid, err := auth.ValidateToken(RefreshToken, us.JwtService.GetSecret(KeyForRefresh))

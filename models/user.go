@@ -80,6 +80,8 @@ type UserRepository interface {
 type UserService interface {
 	// Gets the user by the access token provided
 	GetUserByToken(ctx context.Context, token string) (User, error)
+	// Gets the user by its ID
+	GetUserById(ctx context.Context, ID uint) (User, error)
 	// Refresh the acces token and return new access token and another refresh token
 	RefreshToken(ctx context.Context, refreshToken string) (AuthResponse, error)
 	// TODO : Add a Logout function

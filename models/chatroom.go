@@ -15,7 +15,7 @@ type ChatType string
 type ChatRoom struct {
 	gorm.Model
 	OwnerID   uint
-	Name      string
+	Name      string `gorm:"unique"`
 	IsPublic  bool
 	PublicKey string
 	// Type can be either a "dm" or "group"
@@ -69,7 +69,7 @@ type ChatRoomService interface {
 	RemoveMember(ctx context.Context, Room ChatRoom, user User) error
 
 	// Gets all ChatRooms with the same type
-	GetRooms(ctx context.Context, user User, Type ChatType) ([]ChatRoom, error)
+	GetRooms(ctx context.Context, Type ChatType) ([]ChatRoom, error)
 	// Get all the Members of a room
 	GetMembers(ctx context.Context, Room ChatRoom) ([]User, error)
 	// Get all the Room that the User is joining
@@ -86,6 +86,8 @@ type ChatRoomService interface {
 
 // Router interface for Handlers
 //
+// TODO : add a enpoint of radding users and inviting them
+//
 // the Endpoint will be in a group '/chat/'
 type RoomRouter interface {
 	// this handler must be used by the relative path '/chat/:room_id/join'
@@ -96,20 +98,22 @@ type RoomRouter interface {
 	// this will create a room and the user should only care about the name and if its public or not
 	CreateRoomHandler(c *gin.Context)
 
-	// Creates a invitation key (jwt) so the user will be able to access
-	// relative path : '/chat/:room_id/member' with POST method
-	//
-	// ```NOTE : If the room is public you can't use this ```
-	AddMemberHandler(c *gin.Context)
-
-	// Remove a member from the member list
-	// relative path : /chat/:room_id/member with DELETE method
-	//
-	// TODO : make a ban list
-	RemoveMemberHandler(c *gin.Context)
-
 	// get a specific data about a room
 	// the 'requested' param is what the database will send to the user
 	// reletive path : '/chat/:room_id'
 	GetHandler(c *gin.Context)
+}
+
+// JoinRequest is the provided request the user should give in order to join a room
+//
+// this is optionnal only if the room is privet and the user is joining for the first time
+type JoinRequest struct {
+	InviteKey string `json:"invite_key"`
+}
+
+type CreateRoomRequest struct {
+	Name      string   `json:"name"`
+	MembersID []uint   `json:"members_id"`
+	IsPublic  bool     `json:"is_public"`
+	Type      ChatType `json:"type"`
 }
