@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"context"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/socket"
 	"github.com/youssefhmidi/E2E_encryptedConnection/bootstraps"
@@ -42,20 +45,28 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 	sc := controllers.NewSignupController(env, ss)
 	rc := controllers.NewRoomController(socketServer, wss, rs, us, env)
 
+	// setting up the server Storagefunc and runnig it
+	socketServer.StorageFunc = wss.StoreMsgsToDatabase(context.Background())
+	rooms, err := cr.GetRooms()
+	if err != nil {
+		log.Fatal(err)
+	}
+	socketServer.InitAndRun(rooms)
+
 	// adding endpoints
 
 	// '/login', '/signup', '/refresh'
-	NewLoginRoute(engine, lc)
-	NewSignupRoute(engine, sc)
-	NewRefreshRoute(engine, uc)
+	newLoginRoute(engine, lc)
+	newSignupRoute(engine, sc)
+	newRefreshRoute(engine, uc)
 
 	// '/users/@me'
 	userGroup := engine.Group("/users")
 	userGroup.Use(middlewares.UseTokenVerification(Secrets["access"], "access"))
-	NewUserRoute(userGroup, uc)
+	newUserRoute(userGroup, uc)
 
 	// '/chat/'
 	roomGroup := engine.Group("/chat")
 	roomGroup.Use(middlewares.UseTokenVerification(Secrets["access"], "access"))
-	NewRoomRoutes(roomGroup, rc)
+	newRoomRoutes(roomGroup, rc)
 }

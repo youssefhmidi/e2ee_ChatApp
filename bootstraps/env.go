@@ -1,6 +1,10 @@
 package bootstraps
 
-import "github.com/spf13/viper"
+import (
+	"log"
+
+	"github.com/spf13/viper"
+)
 
 type Env struct {
 	AccessTokenSecret  string `mapstructure:"ACCESS_TOKEN_SECRET"`
@@ -11,17 +15,21 @@ type Env struct {
 	IsReleaseMode      bool   `mapstructure:"IS_RELEASE_MODE"`
 }
 
+// dst : the location of the env
 func NewEnv(dst string) *Env {
 	var env Env
 
+	log.Println("searchig of a .env...")
 	viper.SetConfigFile(dst)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
+	log.Println(".env file has been found and read from")
 
 	if err := viper.Unmarshal(&env); err != nil {
 		panic(err)
 	}
+	log.Println(".env file has been mapped to the Env Struct")
 
 	return &env
 }

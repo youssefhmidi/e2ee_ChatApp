@@ -65,3 +65,8 @@ func (cr *ChatRoomRepository) DeleteRoom(ctx context.Context, room models.ChatRo
 func (cr *ChatRoomRepository) DeleteFromRoom(ctx context.Context, room models.ChatRoom, association string, in interface{}) error {
 	return cr.Db.DeleteAssociation(ctx, &room, association, &in)
 }
+
+func (cr *ChatRoomRepository) GetRooms() ([]models.ChatRoom, error) {
+	res, err := cr.Db.GetAll(context.Background(), 40, &[]models.ChatRoom{})
+	return res.([]models.ChatRoom), err
+}

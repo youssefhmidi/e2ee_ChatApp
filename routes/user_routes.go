@@ -7,11 +7,11 @@ import (
 )
 
 // creates a /refresh endpoint
-func NewRefreshRoute(engine *gin.Engine, ur models.UserRoute) {
+func newRefreshRoute(engine *gin.Engine, ur models.UserRoute) {
 	engine.GET("/refresh", middlewares.UseTokenVerification("refresh", "refresh"), ur.RefreshTokenHandler)
 }
 
 // creates a /users/@me
-func NewUserRoute(userGroup *gin.RouterGroup, ur models.UserRoute) {
+func newUserRoute(userGroup *gin.RouterGroup, ur models.UserRoute) {
 	userGroup.GET("/@me", ur.UserHandler)
 }

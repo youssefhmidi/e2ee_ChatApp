@@ -5,6 +5,6 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
 
-func NewLoginRoute(engine *gin.Engine, lr models.LoginRoute) {
+func newLoginRoute(engine *gin.Engine, lr models.LoginRoute) {
 	engine.POST("/login", lr.LoginHandler)
 }

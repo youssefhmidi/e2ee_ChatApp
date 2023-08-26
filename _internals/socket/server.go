@@ -67,13 +67,6 @@ type SocketServer struct {
 	StorageFunc
 }
 
-// initilize a server with the sore function provided
-func NewServer(Function StorageFunc) *SocketServer {
-	return &SocketServer{
-		StorageFunc: Function,
-	}
-}
-
 func (ss *SocketServer) RunAndRegisterRoom(Room models.ChatRoom) {
 	// adding the room to the SocketServer
 	ss.Rooms = append(ss.Rooms, NewRoom(Room))
@@ -103,9 +96,13 @@ func (ss *SocketServer) GetRoom(ChatRoom models.ChatRoom) (*Room, error) {
 // initilize a SocketServer and populates it with Rooms
 func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
 	// Add registered Rooms to the SocketServer
+	log.Println("SocketServer 1.0v has started")
+	log.Println("Registring rooms in the SocketServer...")
 	for _, r := range DBChatRooms {
 		ss.Rooms = append(ss.Rooms, NewRoom(r))
 	}
+	log.Println("Registred all rooms in the database (success)")
+
 	// run the main loop for the rooms
 	startServer(ss.Rooms, ss)
 }
@@ -113,8 +110,10 @@ func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
 // start the server and hosts all the rooms
 func startServer(ChatRooms []*Room, s *SocketServer) {
 	s.LocalStore = make(Store)
+	log.Panicln("Starting rooms...")
 	for _, r := range ChatRooms {
 		s.LocalStore[r] = make(ClientMessageCh, 30)
+		log.Println("Started room:", r.ChatRoom.ID, "(success)")
 
 		go r.Run(s.LocalStore)
 		go s.LocalStore.Store(r, s.StorageFunc)

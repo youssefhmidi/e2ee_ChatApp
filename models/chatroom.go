@@ -31,6 +31,8 @@ type ChatRoomRepository interface {
 	// Get a ChatRoom
 	GetRoomByID(ctx context.Context, ID uint) (ChatRoom, error)
 	GetRoomByName(ctx context.Context, Name string) (ChatRoom, error)
+	// this function should be used in the main function to get all the rooms
+	GetRooms() ([]ChatRoom, error)
 
 	// fetching multiple ChatRoom
 	GetRoomsFromUser(ctx context.Context, limit int, user User) ([]ChatRoom, error)
