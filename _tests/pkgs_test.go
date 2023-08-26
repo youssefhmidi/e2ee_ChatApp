@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -70,6 +71,13 @@ func TestServer(t *testing.T) {
 
 		go client.ReadIn()
 		go client.WriteOut()
+	})
+
+	engine.GET("/s", func(ctx *gin.Context) {
+		ctx.Header("wow", "that worked?")
+		ctx.Next()
+	}, func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, "hey dude")
 	})
 
 	server.InitAndRun(data.Rooms)

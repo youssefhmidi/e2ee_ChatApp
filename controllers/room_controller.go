@@ -21,8 +21,6 @@ type RoomController struct {
 	UserService      models.UserService
 }
 
-// todo : finish code here
-
 func NewRoomController(ss *socket.SocketServer, wss socket.WebSocketService, crs models.ChatRoomService, us models.UserService, env *bootstraps.Env) models.RoomRouter {
 	return &RoomController{
 		SocketServer:     ss,

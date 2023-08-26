@@ -43,5 +43,6 @@ func UseTokenVerification(secret string, usage string) gin.HandlerFunc {
 		// store a key/value pair with the structure below
 		// access_token = <accessToken>
 		c.Set(usage+"_token", accessToken)
+		c.Next()
 	}
 }
