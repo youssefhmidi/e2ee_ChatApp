@@ -8,5 +8,5 @@ import (
 func newRoomRoutes(roomGroup *gin.RouterGroup, rr models.RoomRouter) {
 	roomGroup.GET("/:room_id", rr.GetHandler)
 	roomGroup.POST("/new", rr.CreateRoomHandler)
-	roomGroup.GET("/:room_id/join", rr.JoinHandler)
+	roomGroup.GET("/session", rr.GenerateToken)
 }

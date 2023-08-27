@@ -49,6 +49,7 @@ func (c *Client) ReadIn() {
 			}
 			break
 		}
+		log.Println("read message")
 		Message := ClientMessage{
 			EncryptedMessage: string(msg),
 			SenderID:         c.User.ID,

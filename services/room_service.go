@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/auth"
 	"github.com/youssefhmidi/E2E_encryptedConnection/_internals/encryption"
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 )
@@ -19,11 +20,13 @@ var (
 
 type RoomService struct {
 	RoomRepository models.ChatRoomRepository
+	JwtService     models.JwtService
 }
 
-func NewRoomService(ur models.UserRepository, Rr models.ChatRoomRepository) models.ChatRoomService {
+func NewRoomService(Rr models.ChatRoomRepository, Jwts models.JwtService) models.ChatRoomService {
 	return &RoomService{
 		RoomRepository: Rr,
+		JwtService:     Jwts,
 	}
 }
 
@@ -132,4 +135,9 @@ func (rs *RoomService) GetRoomsFromUser(ctx context.Context, user models.User) (
 func (rs *RoomService) RemoveRoom(ctx context.Context, Room models.ChatRoom) error {
 	// well I guess this is easy to understand right?
 	return rs.RoomRepository.DeleteRoom(ctx, Room)
+}
+
+func (rs *RoomService) GenerateSessionToken(user models.User) (string, error) {
+	// creates a jwt token that expires after 1 hour
+	return auth.CreateAccessToken(user, rs.JwtService.GetSecret("socket_access"), rs.JwtService.GetExpiryTime("socket_access"))
 }

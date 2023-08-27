@@ -51,7 +51,27 @@ func UseTokenVerification(secret string, usage string) gin.HandlerFunc {
 // a rewrite for makin a websocket auth
 func UseWebsocketAuth(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		key := c.Request.Cookies()
-		log.Println(key)
+		// getting the token from the query and checking if its provided
+		token, IsProvided := c.GetQuery("token")
+		if !IsProvided {
+			c.Abort()
+			return
+		}
+
+		// validating if it is valid or not otherwise it abort the connection
+		IsValide, err := auth.ValidateToken(token, secret)
+		if !IsValide || err != nil {
+			log.Fatal("cannot validat token , error :", err)
+			c.Abort()
+			return
+		}
+
+		userId, err := auth.GetIdFromToken(token, secret)
+		if err != nil {
+			log.Fatal("Got Error :", err)
+		}
+		// setting an access token
+		c.Set("user_id", userId)
+		c.Next()
 	}
 }

@@ -22,12 +22,14 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 
 	// setting up internal services
 	Secrets := map[string]string{
-		"access":  env.AccessTokenSecret,
-		"refresh": env.RefreshTokenSecret,
+		"access":        env.AccessTokenSecret,
+		"refresh":       env.RefreshTokenSecret,
+		"socket_access": env.SocketTokenSecret,
 	}
 	Expiry := map[string]int{
-		"access":  env.AccessTokenExpiry,
-		"refresh": env.RefreshTokenExpiry,
+		"access":        env.AccessTokenExpiry,
+		"refresh":       env.RefreshTokenExpiry,
+		"socket_access": env.SocketTokenExpiry,
 	}
 	jwtS := services.NewJwtService(Secrets, Expiry)
 
@@ -35,7 +37,7 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 	us := services.NewUserService(ur, jwtS)
 	ls := services.NewLoginService(ur, jwtS)
 	ss := services.NewSignupService(ur, jwtS)
-	rs := services.NewRoomService(ur, cr)
+	rs := services.NewRoomService(cr, jwtS)
 	cs := services.NewChatService(mr)
 	wss := services.NewWebsocketService(cs, rs)
 
@@ -67,6 +69,8 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 
 	// '/chat/'
 	roomGroup := engine.Group("/chat")
-	roomGroup.Use(middlewares.UseWebsocketAuth(Secrets["access"]))
+	roomGroup.Use(middlewares.UseTokenVerification(Secrets["access"], "access"))
 	newRoomRoutes(roomGroup, rc)
+	SocketGroup := engine.Group("/chatserver")
+	SocketGroup.GET("/:room_id/join", middlewares.UseWebsocketAuth(Secrets["socket_access"]), rc.JoinHandler)
 }

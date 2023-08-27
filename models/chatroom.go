@@ -84,6 +84,10 @@ type ChatRoomService interface {
 	//
 	// val can be a string or a uint, if another type is passed it will return a ErrInvildeParameterType error and an empty chat room
 	GetRoomBy(ctx context.Context, val any) (ChatRoom, error)
+
+	// generate a token that expires after 1 hour and should be used to verify
+	// users inside the connection
+	GenerateSessionToken(user User) (string, error)
 }
 
 // Router interface for Handlers
@@ -92,18 +96,23 @@ type ChatRoomService interface {
 //
 // the Endpoint will be in a group '/chat/'
 type RoomRouter interface {
-	// this handler must be used by the relative path '/chat/:room_id/join'
+	// this handler must be used by the relative path '/chatserver/:room_id/join'
 	// and a invite key may be nessecairy if the room is not public
 	JoinHandler(c *gin.Context)
 
-	// this handler must be used by the reletive path '/chat/new'
+	// this handler must be used by the relative path '/chat/new'
 	// this will create a room and the user should only care about the name and if its public or not
 	CreateRoomHandler(c *gin.Context)
 
 	// get a specific data about a room
 	// the 'requested' param is what the database will send to the user
-	// reletive path : '/chat/:room_id'
+	// relative path : '/chat/:room_id'
 	GetHandler(c *gin.Context)
+
+	// generates a token for the user to use to connect to the server
+	// it has an expiry duration of an hour
+	// relative path /chat/session
+	GenerateToken(c *gin.Context)
 }
 
 // JoinRequest is the provided request the user should give in order to join a room

@@ -31,7 +31,6 @@ func NewRoomController(ss *socket.SocketServer, wss socket.WebSocketService, crs
 	}
 }
 
-// needs a rewrite
 func (rc *RoomController) JoinHandler(c *gin.Context) {
 	// Upgrade turn the request into a websocket connection. and registrating the room
 	ws, err := socket.DefaultUpgrader.Upgrade(c.Writer, c.Request, nil)
@@ -40,12 +39,12 @@ func (rc *RoomController) JoinHandler(c *gin.Context) {
 		return
 	}
 	// getting the user access token
-	accessToken := c.MustGet("access_token")
+	user_id := c.MustGet("user_id")
 
 	// getting the athor of the request
 	ctx, cancel := context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
 	defer cancel()
-	user, err := rc.UserService.GetUserByToken(ctx, accessToken.(string))
+	user, err := rc.UserService.GetUserById(ctx, user_id.(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
 		return
@@ -139,15 +138,13 @@ func (rc *RoomController) CreateRoomHandler(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusAccepted, models.SuccesMessage{ResponseMessage: "Chat Group created ,EncryptionKey :" + key})
-		return
+	} else {
+		if err := rc.ChatRoomService.CreateDM(ctx, user, members[0]); err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: " cant create room" + err.Error()})
+			return
+		}
+		c.JSON(http.StatusAccepted, models.SuccesMessage{ResponseMessage: "DM created"})
 	}
-
-	if err := rc.ChatRoomService.CreateDM(ctx, user, members[0]); err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: " cant create room" + err.Error()})
-		return
-	}
-	c.JSON(http.StatusAccepted, models.SuccesMessage{ResponseMessage: "DM created"})
-
 	// adding the room to the SocketServer and runing them seperatly
 	ctx, cancel = context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
 	defer cancel()
@@ -208,6 +205,28 @@ func (rc *RoomController) GetHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, room)
+}
+
+func (rc *RoomController) GenerateToken(c *gin.Context) {
+	// getting the user access token
+	accessToken := c.MustGet("access_token")
+
+	// getting the athor of the request
+	ctx, cancel := context.WithTimeout(c, time.Second*time.Duration(rc.Env.ContextTimeout))
+	defer cancel()
+	user, err := rc.UserService.GetUserByToken(ctx, accessToken.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+
+	token, err := rc.ChatRoomService.GenerateSessionToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, token)
 }
 
 func toUint(paramReq string) (uint, error) {

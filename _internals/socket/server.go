@@ -77,6 +77,9 @@ func (ss *SocketServer) RunAndRegisterRoom(Room models.ChatRoom) {
 		log.Fatal("error while trying to registrea new room :", err)
 	}
 
+	// making a storage chan for the room
+	ss.LocalStore[r] = make(ClientMessageCh, 30)
+
 	// these go routines will not finish untill the program is stop
 	go r.Run(ss.LocalStore)
 	go ss.LocalStore.Store(r, ss.StorageFunc)
