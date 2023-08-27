@@ -22,19 +22,19 @@ func (ur *UserRepository) CreatUser(ctx context.Context, user models.User) error
 }
 func (ur *UserRepository) GetUserById(ctx context.Context, ID uint) (models.User, error) {
 	res, err := ur.Db.GetModelById(ctx, &models.User{}, ID)
-	return res.(models.User), err
+	return *res.(*models.User), err
 }
 func (ur *UserRepository) GetUserByPublicKey(ctx context.Context, publicKey string) (models.User, error) {
 	res, err := ur.Db.GetModelWhere(ctx, &models.User{}, "public_key", publicKey)
-	return res.(models.User), err
+	return *res.(*models.User), err
 }
 func (ur *UserRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	res, err := ur.Db.GetModelWhere(ctx, &models.User{}, "email", email)
-	return res.(models.User), err
+	return *res.(*models.User), err
 }
 func (ur *UserRepository) FetchAllUsers(ctx context.Context, limit int) ([]models.User, error) {
 	res, err := ur.Db.GetAll(ctx, limit, &[]models.User{})
-	return res.([]models.User), err
+	return *res.(*[]models.User), err
 }
 func (ur *UserRepository) UpdateUser(ctx context.Context, user models.User, target string, value interface{}) error {
 	return ur.Db.UpdateModel(ctx, &user, target, value)

@@ -19,7 +19,7 @@ type Env struct {
 func NewEnv(dst string) *Env {
 	var env Env
 
-	log.Println("searchig of a .env...")
+	log.Println("searchig of a .env file...")
 	viper.SetConfigFile(dst)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)

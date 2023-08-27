@@ -24,9 +24,9 @@ func NewLoginService(ur models.UserRepository, JwtS models.JwtService) models.Lo
 // return false if the Email do not exist
 func (ls *LoginService) ValidateEmail(ctx context.Context, email string) bool {
 	if _, err := ls.UserRepository.GetUserByEmail(ctx, email); err == nil {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (ls *LoginService) ValidateUser(ctx context.Context, request models.LoginRequest) bool {

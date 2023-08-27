@@ -23,16 +23,16 @@ func (mr *MessageRepository) CreateMessage(ctx context.Context, message models.M
 
 func (mr *MessageRepository) GetMessageByID(ctx context.Context, ID uint) (models.Message, error) {
 	res, err := mr.Db.GetModelById(ctx, &models.Message{}, ID)
-	return res.(models.Message), err
+	return *res.(*models.Message), err
 }
 
 func (mr *MessageRepository) GetMsgsFromUser(ctx context.Context, limit int, user models.User) ([]models.Message, error) {
 	res, err := mr.Db.GetAllWhere(ctx, limit, &[]models.Message{}, "user_id", user.ID)
-	return res.([]models.Message), err
+	return *res.(*[]models.Message), err
 }
 func (mr *MessageRepository) GetMsgsFromRoom(ctx context.Context, limit int, chatRoom models.ChatRoom) ([]models.Message, error) {
 	res, err := mr.Db.GetAllWhere(ctx, limit, &[]models.Message{}, "chat_room_id", chatRoom.ID)
-	return res.([]models.Message), err
+	return *res.(*[]models.Message), err
 }
 func (mr *MessageRepository) UpdateMessage(ctx context.Context, message models.Message, target string, value interface{}) error {
 	return mr.Db.UpdateModel(ctx, &message, target, value)

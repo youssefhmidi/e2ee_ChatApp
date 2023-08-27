@@ -58,7 +58,7 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 	// '/login', '/signup', '/refresh'
 	newLoginRoute(engine, lc)
 	newSignupRoute(engine, sc)
-	newRefreshRoute(engine, uc)
+	newRefreshRoute(engine, uc, Secrets["refresh"])
 
 	// '/users/@me'
 	userGroup := engine.Group("/users")
@@ -67,6 +67,6 @@ func SetupRoutes(engine *gin.Engine, env *bootstraps.Env, db database.SqliteData
 
 	// '/chat/'
 	roomGroup := engine.Group("/chat")
-	roomGroup.Use(middlewares.UseTokenVerification(Secrets["access"], "access"))
+	roomGroup.Use(middlewares.UseWebsocketAuth(Secrets["access"]))
 	newRoomRoutes(roomGroup, rc)
 }

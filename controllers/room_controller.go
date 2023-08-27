@@ -31,7 +31,14 @@ func NewRoomController(ss *socket.SocketServer, wss socket.WebSocketService, crs
 	}
 }
 
+// needs a rewrite
 func (rc *RoomController) JoinHandler(c *gin.Context) {
+	// Upgrade turn the request into a websocket connection. and registrating the room
+	ws, err := socket.DefaultUpgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
+		return
+	}
 	// getting the user access token
 	accessToken := c.MustGet("access_token")
 
@@ -69,12 +76,6 @@ func (rc *RoomController) JoinHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "man! I don't know either wtf to do a this point")
 	}
 
-	// Upgrade turn the request into a websocket connection. and registrating the room
-	ws, err := socket.DefaultUpgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
-		return
-	}
 	room_Conn, err := rc.SocketServer.GetRoom(room)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorMessage{ResponseMessage: err.Error()})
@@ -90,7 +91,6 @@ func (rc *RoomController) JoinHandler(c *gin.Context) {
 		return
 	}
 	room_Conn.Join <- client
-
 	go client.ReadIn()
 	go client.WriteOut()
 }

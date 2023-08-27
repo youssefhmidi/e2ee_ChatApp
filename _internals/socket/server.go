@@ -110,7 +110,7 @@ func (ss *SocketServer) InitAndRun(DBChatRooms []models.ChatRoom) {
 // start the server and hosts all the rooms
 func startServer(ChatRooms []*Room, s *SocketServer) {
 	s.LocalStore = make(Store)
-	log.Panicln("Starting rooms...")
+	log.Println("Starting rooms...")
 	for _, r := range ChatRooms {
 		s.LocalStore[r] = make(ClientMessageCh, 30)
 		log.Println("Started room:", r.ChatRoom.ID, "(success)")

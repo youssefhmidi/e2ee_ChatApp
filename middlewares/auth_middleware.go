@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ import (
 func UseTokenVerification(secret string, usage string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// getting the Authorisation value from the header
-		token := c.GetHeader("Authorisation")
+		token := c.GetHeader("Authorization")
 
 		// gets the auth type to validate if the Header request is in this shape
 		// 'Bearer <Token>'
@@ -44,5 +45,13 @@ func UseTokenVerification(secret string, usage string) gin.HandlerFunc {
 		// access_token = <accessToken>
 		c.Set(usage+"_token", accessToken)
 		c.Next()
+	}
+}
+
+// a rewrite for makin a websocket auth
+func UseWebsocketAuth(secret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		key := c.Request.Cookies()
+		log.Println(key)
 	}
 }
