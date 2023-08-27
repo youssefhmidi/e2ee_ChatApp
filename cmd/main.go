@@ -9,11 +9,14 @@ import (
 )
 
 func main() {
-	log.Println("E2E_encrytedConnection is a backend for a chat app which is meant to store encrypted data, the chat app client side is the responsible for encryption")
-	DB := bootstraps.InitDatabase("./database/db/testingdb.db")
-	App := bootstraps.DefaultApp(".env", DB)
-	router := gin.Default()
+	log.Println(`E2E_encrytedConnection is a backend for a chat app which is meant to store encrypted data, 
+				the chat app client side is the responsible for encryption`)
+	env := bootstraps.NewEnv(".env")
+	DB := bootstraps.InitDatabase(env.IsReleaseMode)
+	App := bootstraps.DefaultApp(DB)
+	App.Env = env
 
+	router := gin.Default()
 	routes.SetupRoutes(router, App.Env, DB, App.SocketServer)
 
 	router.Run()

@@ -18,10 +18,9 @@ type App struct {
 // an initializer for making a basic App
 // env : location of the '.env' file
 // db : usualy returned from the InitDatabase func
-func DefaultApp(env string, db database.SqliteDatabase) *App {
+func DefaultApp(db database.SqliteDatabase) *App {
 	return &App{
 		Db:           db,
-		Env:          NewEnv(env),
 		SocketServer: &socket.SocketServer{},
 	}
 }
