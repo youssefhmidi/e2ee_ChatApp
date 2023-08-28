@@ -20,7 +20,7 @@ in the controllers directory who calls other function which mutate or get some d
 all the file in the "/routes/" directory handle incomming requests and calls a function in the "/controllers/" directory who uses some features form 
 the "/services/" directory or use some packages from the "/_internals/", and then those directories mutate the database and return a success or a data response, also the socket package may send someting to the end user because it streams data.
 
-for the request/response cycle heres a example of it:
+for the request/response cycle here's a example of it:
 
 !["Detailed view of the request/response cycle"](https://github.com/youssefhmidi/E2E_encryptedConnection/blob/main/.assets/3.png)
 
