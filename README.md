@@ -4,6 +4,7 @@
 lets have a look at the applicaton from a high level view.
 
 !["High level view of the application"](https://github.com/youssefhmidi/E2E_encryptedConnection/blob/main/.assets/1.png)
+
 as you can see in the above image, it shows that if  a client sends a request it will be sent to the http server who execute some code or call a function 
 in the controllers directory who calls other function which mutate or get some data from the database
 
@@ -15,6 +16,7 @@ in the controllers directory who calls other function which mutate or get some d
 > 'i.e adding/removing members, handling invite keys and others simple feature' my goal was to lunch a project into production as fast as possible.
 
 !["Detailed view of the backend architecture"](https://github.com/youssefhmidi/E2E_encryptedConnection/blob/main/.assets/2.png)
+
 all the file in the "/routes/" directory handle incomming requests and calls a function in the "/controllers/" directory who uses some features form 
 the "/services/" directory or use some packages from the "/_internals/", and then those directories mutate the database and return a success or a data response, also the socket package may send someting to the end user because it streams data.
 
@@ -36,3 +38,5 @@ for the request/response cycle heres a example of it:
 ## Encryption strategies
 Most encryption will happen at the client side so the server will be reciving just some random text that can be decrypted, but the server side will be 
 responsible for orginizing group chats and public groups  
+
+## Usage "aka code snippets for you to copy :)"
