@@ -40,4 +40,32 @@ for the request/response cycle here's a example of it:
 Most encryption will happen at the client side so the server will be reciving just some random text that can be decrypted, but the server side will be 
 responsible for orginizing group chats and public groups  
 
-## Usage "aka code snippets for you to copy :)"
+## Usage "aka code snippets for you to copy :)
+
+- run these commands so you can clone this repo
+
+```bash
+    git clone https://github.com/youssefhmidi/e2ee_ChatApp.git
+    cd ./e2ee_ChatApp
+```
+
+- then copy and make your own .env file (no db config it uses sqlite)
+- make sure to initilize a db if it didn't initilize it itself
+- then run these commands 
+
+```bash
+    go -o ./build/app.exe ./cmd/main.go 
+    ./build/app.exe
+```
+
+then the app will run automatically.
+
+> Note : if you moved the executable into another directory make sure that the .env file is in the same directory as the .exe.
+
+if your moving the executable into another directory run these commands before starting the app
+
+```bash
+    mkdire database/db/
+```
+
+**TODO : make the app initilize the directory withount needing any manual setup**
