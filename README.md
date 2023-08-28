@@ -3,7 +3,7 @@
 ## Application cycle
 firstly lets have a look a t the applicaton from a high level view
 
-!["High level view of the application"](https://github.com/youssefhmidi/E2E_encryptedConnection/tree/main/.assets/1.png)
+!["High level view of the application"](https://github.com/youssefhmidi/E2E_encryptedConnection/blob/main/.assets/1.png)
 
 ## Endpoints
 
