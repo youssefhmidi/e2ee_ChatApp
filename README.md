@@ -54,7 +54,7 @@ responsible for orginizing group chats and public groups
 - then run these commands 
 
 ```bash
-    go -o ./build/app.exe ./cmd/main.go 
+    go build -o ./build/app.exe ./cmd/main.go 
     ./build/app.exe
 ```
 
