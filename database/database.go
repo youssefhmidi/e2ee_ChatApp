@@ -8,6 +8,7 @@ import (
 	"github.com/youssefhmidi/E2E_encryptedConnection/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // interface for simple interaction with the database
@@ -65,6 +66,7 @@ type Database struct {
 func NewDB(location string) SqliteDatabase {
 	DB, err := gorm.Open(sqlite.Open(location), &gorm.Config{})
 	log.Println("connecting to the database....")
+	DB = DB.Preload(clause.Associations)
 	if err != nil {
 		log.Fatal(err)
 		return &Database{}
